@@ -8,5 +8,5 @@ setup(name='torchprivacy',
                 #'mpmath>=1.1.0',
                 'torch>=1.2.0',
                 ],
-      packages=find_packages(exclude=['docs']),
+      packages=['torchprivacy'],
       )
