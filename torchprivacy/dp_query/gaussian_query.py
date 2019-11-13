@@ -9,8 +9,8 @@ import collections
 
 import torch
 
-from torchprivacy.privacy.dp_query import dp_query
-from torchprivacy.privacy.dp_query import normalized_query
+from torchprivacy.dp_query import dp_query
+from torchprivacy.dp_query import normalized_query
 
 
 class GaussianSumQuery(dp_query.SumAggregationDPQuery):
@@ -81,7 +81,7 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     def get_noised_result(self, sample_state, global_state):
         """See base class."""
         def add_noise(v):
-            return v + torch.normal(0, std=global_state.stddev, v.size())
+            return v + torch.normal(mean=0, std=global_state.stddev, size=v.size())
         if self._ledger:
             self._ledger.record_sum_query(global_state.l2_norm_clip, global_state.stddev)
         return add_noise(sample_state), global_state

@@ -9,8 +9,8 @@ import collections
 import numpy as np
 import torch
 
-from torchprivacy.privacy.dp_query import dp_query
-from torchprivacy.privacy.analysis.tensor_buffer import TensorBuffer
+from torchprivacy.dp_query import dp_query
+from torchprivacy.analysis.tensor_buffer import TensorBuffer
 
 SampleEntry = collections.namedtuple(  # pylint: disable=invalid-name
         'SampleEntry', ['population_size', 'selection_probability', 'queries'])

@@ -9,7 +9,7 @@ import collections
 
 import torch
 
-from torchprivacy.privacy.dp_query import dp_query
+from torchprivacy.dp_query import dp_query
 
 
 class NormalizedQuery(dp_query.DPQuery):
