@@ -65,12 +65,14 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
                 before clipping.
         """
         l2_norm_clip = params
-        l2_norm = torch.norm(record)
-        # TODO: Renorm
+        try:
+            l2_norm = torch.norm(record)
+        except:
+            l2_norm = record.l2estimate()
         if l2_norm < l2_norm_clip:
             return (record, l2_norm)
         else:
-            return (torch.div(record, torch.abs(l2_norm / l2_norm_clip)), l2_norm)
+            return (record / torch.abs(l2_norm / l2_norm_clip), l2_norm)
 
     def preprocess_record(self, params, record):
         preprocessed_record, _ = self.preprocess_record_impl(params, record)
