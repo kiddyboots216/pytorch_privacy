@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import torch
 
-from torchprivacy.privacy.dp_query import dp_query
+from torchprivacy.dp_query import dp_query
 
 
 class NoPrivacySumQuery(dp_query.SumAggregationDPQuery):
@@ -28,7 +28,7 @@ class NoPrivacyAverageQuery(dp_query.SumAggregationDPQuery):
 
     def initial_sample_state(self, template):
         """See base class."""
-        return (super(NoPrivacyAverageQuery, self).initial_sample_state(template), (0.0)
+        return (super(NoPrivacyAverageQuery, self).initial_sample_state(template), (0.0))
 
     def preprocess_record(self, params, record, weight=1):
         """Multiplies record by weight."""
