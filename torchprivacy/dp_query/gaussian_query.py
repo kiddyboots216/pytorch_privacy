@@ -12,6 +12,8 @@ import torch
 from torchprivacy.dp_query import dp_query
 from torchprivacy.dp_query import normalized_query
 
+_GlobalState = collections.namedtuple(
+            '_GlobalState', ['l2_norm_clip', 'stddev'])
 
 class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     """Implements DPQuery interface for Gaussian sum queries.
@@ -20,8 +22,6 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     """
 
     # pylint: disable=invalid-name
-    _GlobalState = collections.namedtuple(
-            '_GlobalState', ['l2_norm_clip', 'stddev'])
 
     def __init__(self, l2_norm_clip, stddev):
         """Initializes the GaussianSumQuery.
@@ -41,7 +41,7 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     def make_global_state(self, l2_norm_clip, stddev):
         """Creates a global state from the given parameters."""
         # TODO: Do I need to cast this to a torch float? Probably not
-        return self._GlobalState(l2_norm_clip, stddev)
+        return _GlobalState(l2_norm_clip, stddev)
 
     def initial_global_state(self):
         return self.make_global_state(self._l2_norm_clip, self._stddev)
