@@ -81,6 +81,8 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     def get_noised_result(self, sample_state, global_state):
         """See base class."""
         def add_noise(v):
+            m = torch.distributions.Normal(loc=0, scale=global_state.stddev)
+            return v + m.sample(v.size())
             return v + torch.normal(mean=0, std=global_state.stddev, size=v.size())
         if self._ledger:
             self._ledger.record_sum_query(global_state.l2_norm_clip, global_state.stddev)

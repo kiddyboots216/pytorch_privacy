@@ -7,6 +7,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
+from numpy.testing import assert_, assert_raises
+import math
 
 def run_query(query, records, global_state=None, weights=None):
     """Executes query on the given set of records as a single sample.
@@ -34,3 +37,11 @@ def run_query(query, records, global_state=None, weights=None):
             sample_state = query.accumulate_record(
                     params, sample_state, record, weight)
     return query.get_noised_result(sample_state, global_state)
+
+def assert_allclose(result, expected):
+    return np.testing.assert_allclose(result, expected)
+
+def assert_near(f1, f2, err, msg=None):
+    assert_(
+        f1 == f2 or math.fabs(f1 - f2) <= err, "%f != %f +/- %f%s" %
+        (f1, f2, err, " (%s)" % msg if msg is not None else ""))
