@@ -32,6 +32,7 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
             stddev: The stddev of the noise added to the sum.
         """
         self._l2_norm_clip = l2_norm_clip
+        self._record_l2_norm = None
         self._stddev = stddev
         self._ledger = None
 
@@ -41,7 +42,7 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     def make_global_state(self, l2_norm_clip, stddev):
         """Creates a global state from the given parameters."""
         # TODO: Do I need to cast this to a torch float? Probably not
-        return _GlobalState(l2_norm_clip, stddev)
+        return _GlobalState(torch.tensor(l2_norm_clip, dtype=torch.float32), torch.tensor(stddev, dtype=torch.float32))
 
     def initial_global_state(self):
         return self.make_global_state(self._l2_norm_clip, self._stddev)
@@ -51,6 +52,12 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
 
     def initial_sample_state(self, template):
         return torch.zeros_like(template)
+
+    def get_record_derived_data(self):
+        return {
+            "l2_norm:": self._record_l2_norm.numpy().item()
+        }
+	
 
     def preprocess_record_impl(self, params, record):
         """Clips the l2 norm, returning the clipped record and the l2 norm.
@@ -69,6 +76,7 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
             l2_norm = torch.norm(record)
         except:
             l2_norm = record.l2estimate()
+        self._record_l2_norm = l2_norm
         if l2_norm < l2_norm_clip:
             return (record, l2_norm)
         else:
@@ -81,8 +89,6 @@ class GaussianSumQuery(dp_query.SumAggregationDPQuery):
     def get_noised_result(self, sample_state, global_state):
         """See base class."""
         def add_noise(v):
-            m = torch.distributions.Normal(loc=0, scale=global_state.stddev)
-            return v + m.sample(v.size())
             return v + torch.normal(mean=0, std=global_state.stddev, size=v.size())
         if self._ledger:
             self._ledger.record_sum_query(global_state.l2_norm_clip, global_state.stddev)
