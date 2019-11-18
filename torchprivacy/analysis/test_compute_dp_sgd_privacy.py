@@ -20,7 +20,7 @@ from __future__ import print_function
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from torchprivacy.analysis import compute_dp_sgd_privacy
+from torchprivacy.analysis.compute_dp_sgd_privacy import compute_dp_sgd_privacy
 
 
 class ComputeDpSgdPrivacyTest(parameterized.TestCase):
@@ -32,7 +32,7 @@ class ComputeDpSgdPrivacyTest(parameterized.TestCase):
     )
     def test_compute_dp_sgd_privacy(self, n, batch_size, noise_multiplier, epochs,
                                                                     delta, expected_eps, expected_order):
-        eps, order = compute_dp_sgd_privacy.compute_dp_sgd_privacy(
+        eps, order = compute_dp_sgd_privacy(
                 n, batch_size, noise_multiplier, epochs, delta)
         self.assertAlmostEqual(eps, expected_eps)
         self.assertAlmostEqual(order, expected_order)

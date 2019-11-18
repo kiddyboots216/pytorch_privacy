@@ -37,16 +37,13 @@ import sys
 
 from absl import app
 from absl import flags
+import argparse
+import numpy as np
 
 from torchprivacy.analysis.rdp_accountant import compute_rdp, get_privacy_spent
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('N', None, 'Total number of examples')
-flags.DEFINE_integer('batch_size', None, 'Batch size')
-flags.DEFINE_float('noise_multiplier', None, 'Noise multiplier for DP-SGD')
-flags.DEFINE_float('epochs', None, 'Number of epochs (may be fractional)')
-flags.DEFINE_float('delta', 1e-6, 'Target delta')
 
 
 def apply_dp_sgd_analysis(q, sigma, steps, orders, delta):
@@ -84,17 +81,25 @@ def compute_dp_sgd_privacy(n, batch_size, noise_multiplier, epochs, delta):
 
     return apply_dp_sgd_analysis(q, noise_multiplier, steps, orders, delta)
 
+def compute_noise_multiplier(args):
+    """Compute noise multiplier based on given params"""
+    return (8 * args.participation ** 2 * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)) / (args.epsilon ** 2 * args.num_clients ** 2)
 
-def main(argv):
-    del argv  # argv is not used.
-
-    assert FLAGS.N is not None, 'Flag N is missing.'
-    assert FLAGS.batch_size is not None, 'Flag batch_size is missing.'
-    assert FLAGS.noise_multiplier is not None, 'Flag noise_multiplier is missing.'
-    assert FLAGS.epochs is not None, 'Flag epochs is missing.'
-    compute_dp_sgd_privacy(FLAGS.N, FLAGS.batch_size, FLAGS.noise_multiplier,
-                                                  FLAGS.epochs, FLAGS.delta)
+def main(args):
+    args.noise_multiplier = compute_noise_multiplier(args)
+    compute_dp_sgd_privacy(args.num_clients, args.num_workers, args.noise_multiplier,
+                                                  args.epochs, args.delta)
 
 
 if __name__ == '__main__':
-    app.run(main)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--num_clients", type=int, help='Total number of samples')
+    parser.add_argument("--num_workers", type=int, help='Batch size or number of workers')
+    #parser.add_argument('--noise_multiplier', type=float, help='Noise multiplier for DP-SGD')
+    parser.add_argument('--epochs', type=float, help='Number of epochs (may be fractional)')
+    parser.add_argument('--delta', type=float, help='Target delta')
+    parser.add_argument("--epsilon", type=float, default=2.0, help='target epsilon')
+    parser.add_argument("--l2_norm_clip", type=float, default=1.0, help='l2 norm to clip to')
+    args = parser.parse_args()
+    args.participation = args.num_workers / args.num_clients
+    main(args)
