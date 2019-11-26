@@ -83,20 +83,32 @@ def compute_dp_sgd_privacy(n, batch_size, noise_multiplier, epochs, delta):
 
 def compute_noise_multiplier(args):
     """Compute noise multiplier based on given params"""
-    return (8 * args.participation ** 2 * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)) / (args.epsilon ** 2 * args.num_clients ** 2)
+    #return (8 * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)) / (np.log( (np.exp(-args.epsilon / np.sqrt(args.num_epochs / args.participation)) - 1) / (args.participation) + 1) ** 2)
+    const = 8
+    num = const * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)
+    n_iters = args.num_epochs / args.participation
+    eps_num = np.exp(args.epsilon / np.sqrt(n_iters)) - 1
+    eps_denom = args.participation
+    inner = (eps_num / eps_denom) + 1
+    eps_bar = np.log(inner)
+    denom = eps_bar ** 2 * args.num_worker ** 2
+    sigma_squared = num / denom
+    return np.sqrt(sigma_squared)
 
 def main(args):
-    args.noise_multiplier = compute_noise_multiplier(args)
+    if args.noise_multiplier is None:
+        args.noise_multiplier = compute_noise_multiplier(args)
+    print(f"Adding noise: {args.noise_multiplier}")
     compute_dp_sgd_privacy(args.num_clients, args.num_workers, args.noise_multiplier,
-                                                  args.epochs, args.delta)
+                                                  args.num_epochs, args.delta)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_clients", type=int, help='Total number of samples')
     parser.add_argument("--num_workers", type=int, help='Batch size or number of workers')
-    #parser.add_argument('--noise_multiplier', type=float, help='Noise multiplier for DP-SGD')
-    parser.add_argument('--epochs', type=float, help='Number of epochs (may be fractional)')
+    parser.add_argument('--noise_multiplier', type=float, help='Noise multiplier for DP-SGD')
+    parser.add_argument('--num_epochs', type=float, help='Number of epochs (may be fractional)')
     parser.add_argument('--delta', type=float, help='Target delta')
     parser.add_argument("--epsilon", type=float, default=2.0, help='target epsilon')
     parser.add_argument("--l2_norm_clip", type=float, default=1.0, help='l2 norm to clip to')
