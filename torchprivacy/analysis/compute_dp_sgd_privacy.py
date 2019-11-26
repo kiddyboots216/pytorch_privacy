@@ -91,7 +91,7 @@ def compute_noise_multiplier(args):
     eps_denom = args.participation
     inner = (eps_num / eps_denom) + 1
     eps_bar = np.log(inner)
-    denom = eps_bar ** 2 * args.num_worker ** 2
+    denom = eps_bar ** 2 * args.num_workers ** 2
     sigma_squared = num / denom
     return np.sqrt(sigma_squared)
 
