@@ -83,7 +83,7 @@ def compute_dp_sgd_privacy(n, batch_size, noise_multiplier, epochs, delta):
 
 def compute_noise_multiplier(args):
     """Compute noise multiplier based on given params"""
-    #return (8 * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)) / (np.log( (np.exp(-args.epsilon / np.sqrt(args.num_epochs / args.participation)) - 1) / (args.participation) + 1) ** 2)
+    """
     const = 8
     num = const * args.l2_norm_clip ** 2 * np.log(1.25 / args.delta)
     n_iters = args.num_epochs / args.participation
@@ -92,6 +92,10 @@ def compute_noise_multiplier(args):
     inner = (eps_num / eps_denom) + 1
     eps_bar = np.log(inner)
     denom = eps_bar ** 2 * args.num_workers ** 2
+    """
+    n_iters = args.num_epochs / args.participation
+    num = n_iters * args.l2_norm_clip ** 2
+    denom = args.num_clients ** 2 * args.epsilon ** 2
     sigma_squared = num / denom
     return np.sqrt(sigma_squared)
 
